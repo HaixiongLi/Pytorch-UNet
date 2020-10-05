@@ -9,15 +9,15 @@ import torch.nn as nn
 from torch import optim
 from tqdm import tqdm
 
-from eval import eval_net
-from unet import UNet
+from PytorchUNet.eval import eval_net
+from PytorchUNet.unet import UNet
 
 from torch.utils.tensorboard import SummaryWriter
-from utils.dataset import BasicDataset
+from PytorchUNet.utils.dataset import BasicDataset
 from torch.utils.data import DataLoader, random_split
 
-dir_img = 'data/imgs/'
-dir_mask = 'data/masks/'
+dir_img = './data/imgs/'
+dir_mask = './data/masks/'
 dir_checkpoint = 'checkpoints/'
 
 
@@ -53,9 +53,9 @@ def train_net(net,
 
     optimizer = optim.RMSprop(net.parameters(), lr=lr, weight_decay=1e-8)
     if net.n_classes > 1:
-        criterion = nn.CrossEntropyLoss()
+        criterion = nn.CrossEntropyLoss()       #多类别分类
     else:
-        criterion = nn.BCEWithLogitsLoss()
+        criterion = nn.BCEWithLogitsLoss()      #单标签二分类或者多标签二分类
 
     for epoch in range(epochs):
         net.train()
@@ -146,7 +146,7 @@ if __name__ == '__main__':
     #   - For 1 class and background, use n_classes=1
     #   - For 2 classes, use n_classes=1
     #   - For N > 2 classes, use n_classes=N
-    net = UNet(n_channels=3, n_classes=1)
+    net = UNet(n_channels=3, n_classes=20)
     logging.info(f'Network:\n'
                  f'\t{net.n_channels} input channels\n'
                  f'\t{net.n_classes} output channels (classes)\n'
