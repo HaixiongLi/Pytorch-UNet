@@ -1,3 +1,4 @@
+import os
 from os.path import splitext
 from os import listdir
 import numpy as np
@@ -36,8 +37,8 @@ class BasicDataset(Dataset):
 
         # HWC to CHW
         img_trans = img_nd.transpose((2, 0, 1))
-        if img_trans.max() > 1:
-            img_trans = img_trans / 255
+        # if img_trans.max() > 1:
+        #     img_trans = img_trans / 255
 
         return img_trans
 
@@ -60,3 +61,37 @@ class BasicDataset(Dataset):
         mask = self.preprocess(mask, self.scale)
 
         return {'image': torch.from_numpy(img), 'mask': torch.from_numpy(mask)}
+
+
+        self.imgs_dir = imgs_dir
+        self.masks_dir = masks_dir
+        self.scale = scale
+
+
+    def get_paths(self):
+        train_dataset, val_dataset = [], []
+        fnames = os.listdir(self.path_img)
+        np.random.shuffle(fnames)
+        train_len = int((1 - self.val_frac) * len(fnames))
+
+        for i, fname in enumerate(fnames):
+
+            name = fname.split("_")
+            name = "_".join([name[0], self.mode, name[1]])
+
+            img_path = os.path.join(self.path_img, fname)
+            mask_path = os.path.join(self.path_masks, name)
+
+            # look of the mask exists
+            try:
+                os.stat(mask_path)
+                pair = (img_path, mask_path)
+
+                if i < train_len:
+                    train_dataset.append(pair)
+                else:
+                    val_dataset.append(pair)
+            except:
+                pass
+
+        return train_dataset, val_dataset
